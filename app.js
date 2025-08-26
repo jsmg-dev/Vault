@@ -4,14 +4,15 @@ const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const session = require('express-session'); // <-- IMPORT HERE
 const app = express();
+const usersRouter = require('./routes/users');
 const port = 8080;
 
 // Add after bodyParser middleware
 app.use(session({
-  secret: 'your-very-strong-secret', // change to your own secret
+  secret: 'your-secret-key',   // change this to a strong random key
   resave: false,
   saveUninitialized: false,  // only store session if modified
-  cookie: { maxAge: 60 * 60 * 1000 } // 1 hour
+cookie: { secure: false }    // set secure: true only if using HTTPS
 }));
 
 
@@ -31,7 +32,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // === Import Routes ===
 const authRoutes = require('./routes/auth');
@@ -42,10 +44,11 @@ const reportsRoutes = require('./routes/reports');
 
 // === Mount Routes ===
 app.use('/auth', authRoutes);
-app.use('/users', userRoutes);
+app.use('/users', usersRouter);
 app.use('/customers', customerRoutes);
 app.use('/deposits', depositRoutes);
 app.use('/reports', reportsRoutes);
+
 
 // === Login Page ===
 app.get('/', (req, res) => {
@@ -63,11 +66,13 @@ app.post('/login', (req, res) => {
       return res.status(500).send('Internal server error');
     }
 
- if (row) {
-      // ✅ Store user info in session
-      req.session.userId = row.id;
-      req.session.userRole = row.role; // important for user management grid
-      req.session.username = row.username;
+    if (row) {
+      // ✅ Store user in session in the SAME format as auth.js
+      req.session.user = {
+        id: row.id,
+        username: row.username,
+        role: row.role
+      };
 
       return res.redirect('/pages/dashboard.html');
     } else {
@@ -84,66 +89,6 @@ app.get('/customers/count', (req, res) => {
       return res.status(500).json({ total: 0 });
     }
     res.json({ total: row.total });
-  });
-});
-
-// === API: Dashboard Metrics ===
-app.get('/api/customers/count', (req, res) => {
-  const response = {
-    totalCustomers: 0,
-    totalDeposits: 0,
-    activeLoans: 0,
-    monthlyEarnings: 140000, // Example static value
-    customersPerMonth: {},
-    loanTypes: {},
-    revenueTrend: {}
-  };
-
-  const customersQuery = `SELECT COUNT(*) AS totalCustomers FROM customers`;
-  const depositsQuery = `SELECT SUM(amount) AS totalDeposits FROM deposits`;
-  const activeLoansQuery = `SELECT COUNT(*) AS activeLoans FROM customers WHERE status = "active"`;
-  const customerMonthQuery = `SELECT strftime('%m', start_date) AS month, COUNT(*) AS count FROM customers GROUP BY month`;
-  const loanTypeQuery = `SELECT loan_type, COUNT(*) AS count FROM customers GROUP BY loan_type`;
-  const revenueQuery = `SELECT strftime('%m', date) AS month, SUM(amount) AS total FROM deposits GROUP BY month`;
-
-  db.get(customersQuery, [], (err, row) => {
-    if (!err) response.totalCustomers = row.totalCustomers;
-
-    db.get(depositsQuery, [], (err, row) => {
-      if (!err) response.totalDeposits = row.totalDeposits || 0;
-
-      db.get(activeLoansQuery, [], (err, row) => {
-        if (!err) response.activeLoans = row.activeLoans;
-
-        db.all(customerMonthQuery, [], (err, rows) => {
-          if (!err) {
-            rows.forEach(r => {
-              const month = new Date(2024, parseInt(r.month) - 1).toLocaleString('default', { month: 'short' });
-              response.customersPerMonth[month] = r.count;
-            });
-          }
-
-          db.all(loanTypeQuery, [], (err, rows) => {
-            if (!err) {
-              rows.forEach(r => {
-                response.loanTypes[r.loan_type] = r.count;
-              });
-            }
-
-            db.all(revenueQuery, [], (err, rows) => {
-              if (!err) {
-                rows.forEach(r => {
-                  const month = new Date(2024, parseInt(r.month) - 1).toLocaleString('default', { month: 'short' });
-                  response.revenueTrend[month] = r.total;
-                });
-              }
-
-              res.json(response);
-            });
-          });
-        });
-      });
-    });
   });
 });
 
@@ -284,3 +229,34 @@ app.get('/emi/notifications', (req, res) => {
   });
 });
 
+// Node.js / Express example
+app.get('/auth/me', (req, res) => {
+  // assuming you store the logged-in user in session
+  if (!req.session.user) return res.status(401).json({ error: 'Not logged in' });
+
+  res.json({ role: req.session.user.role, username: req.session.user.username });
+});
+// EMI API Route
+app.get('/emi', (req, res) => {
+  let { amount, rate, months } = req.query;
+
+  amount = parseFloat(amount);
+  rate = parseFloat(rate);
+  months = parseInt(months);
+
+  if (!amount || !rate || !months) {
+    return res.status(400).json({ error: 'Invalid input' });
+  }
+
+  const monthlyRate = (rate / 12) / 100;
+  let emi;
+
+  if (monthlyRate === 0) {
+    emi = amount / months;
+  } else {
+    emi = (amount * monthlyRate * Math.pow(1 + monthlyRate, months)) /
+          (Math.pow(1 + monthlyRate, months) - 1);
+  }
+
+  res.json({ emi: emi.toFixed(2) });
+});

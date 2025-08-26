@@ -56,6 +56,10 @@
     .customer  { background: #2ecc71; }
     .deposit   { background: #f1c40f; color: #2c3e50; }
     .reports   { background: #1abc9c; }
+    .emi   { background: #f093fb; }
+      .hidden {
+  display: none !important;
+}
     .right-panel {
       flex: 1; background: #f5f7fa; padding: 20px; overflow-y: auto;
     }
@@ -89,6 +93,8 @@
       .left-panel { flex-direction: row; overflow-x: auto; width: 100%; }
       .card-left { flex: 1; min-width: 180px; }
     }
+
+  
   </style>
 </head>
 <body>
@@ -106,9 +112,10 @@
 <div class="dashboard-container">
   <!-- LEFT PANEL -->
   <div class="left-panel">
-    <a href="/pages/user-management.html" class="card-left user">User Management <i class="fas fa-user-cog"></i></a>
+    <a href="/pages/user-management.html" id="userManagementCard" class="card-left user hidden">User Management <i class="fas fa-user-cog"></i></a>
     <a href="/pages/customer-list.html" class="card-left customer">Create Customer <i class="fas fa-users"></i></a>
     <a href="/pages/deposit-list.html" class="card-left deposit">Deposit <i class="fas fa-hand-holding-usd"></i></a>
+     <a href="/pages/emi-calculator.html" class="card-left emi">EMI Calculator <i class="fas fa-file-alt"></i></a>
     <a href="/pages/reports.html" class="card-left reports">Reports <i class="fas fa-file-alt"></i></a>
   </div>
 
@@ -184,20 +191,70 @@
     options: { responsive: true, scales: { y: { beginAtZero: true } } }
   });
 
-  // Fetch total customers
+  
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const card = document.getElementById("userManagementCard");
+  if (!card) return;
+
+  // Ensure hidden by default (in case HTML didn’t load the class for some reason)
+  card.classList.add("hidden");
+
+  try {
+    const res = await fetch('/auth/me', { credentials: 'include' });
+    if (!res.ok) {
+      // Not logged in or no session -> keep hidden
+      return;
+    }
+    const user = await res.json();
+    const role = (user.role || '').toLowerCase();
+
+    if (role === 'admin') {
+      card.classList.remove('hidden'); // ✅ show for admin
+    } else {
+      card.classList.add('hidden');    // ✅ keep hidden for staff/others
+    }
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    // On error, keep hidden
+  }
+});
+</script>
+<script>
+  // Fetch and display total customers
   async function loadTotalCustomers() {
     try {
-      const res = await fetch('/customers/count'); // <- correct endpoint
+      const res = await fetch('/customers/count', { credentials: 'include' });
+      
+      if (!res.ok) {
+        // HTTP error (404, 500, etc.)
+        console.error("HTTP error:", res.status, res.statusText);
+        document.getElementById('total-customers').textContent = "0";
+        return;
+      }
+
       const data = await res.json();
-      const total = data.total || 0;
+
+      if (data.error) {
+        console.error("API error:", data.error);
+        document.getElementById('total-customers').textContent = "0";
+        return;
+      }
+
+      // Use `total` if available, fallback to `count`, otherwise 0
+      const total = data.total ?? data.count ?? 0;
       document.getElementById('total-customers').textContent = total.toLocaleString();
     } catch (err) {
       console.error('Failed to load total customers:', err);
+      document.getElementById('total-customers').textContent = "0";
     }
   }
 
-  loadTotalCustomers();
+  // Call on page load
+  document.addEventListener("DOMContentLoaded", loadTotalCustomers);
 </script>
+
 
 </body>
 </html>

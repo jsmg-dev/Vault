@@ -27,10 +27,17 @@
       box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
     }
 
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 600;
+      color: #333;
+    }
+
     input, select {
       width: 100%;
       padding: 12px;
-      margin: 12px 0;
+      margin-top: 6px;
       border-radius: 6px;
       border: 1px solid #ccc;
       font-size: 15px;
@@ -46,11 +53,23 @@
       font-size: 16px;
       border-radius: 6px;
       cursor: pointer;
-      margin-top: 10px;
+      margin-top: 20px;
     }
 
     button:hover {
       background: #00307a;
+    }
+
+    .message {
+      margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
     }
   </style>
 </head>
@@ -59,22 +78,62 @@
   <h2>Create User</h2>
 
   <div class="form-container">
-    <form action="/users/create" method="POST" autocomplete="off">
-      <input type="text" name="name" placeholder="Full Name" required />
+    <form id="createUserForm" autocomplete="off">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" name="name" placeholder="Full Name" required />
 
-      <input type="text" name="username" placeholder="Username" required autocomplete="new-username" />
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="Username" required autocomplete="new-username" />
 
-      <input type="password" name="password" placeholder="Password" required autocomplete="new-password" />
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Password" required autocomplete="new-password" />
 
-      <select name="role" required>
+      <label for="role">Role</label>
+      <select id="role" name="role" required>
         <option value="">Select Role</option>
         <option value="admin">Admin</option>
         <option value="staff">Staff</option>
       </select>
 
       <button type="submit">Create User</button>
+      <div class="message" id="message"></div>
     </form>
   </div>
 
+  <script>
+    document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = {
+        name: document.getElementById('name').value,
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value,
+        role: document.getElementById('role').value
+      };
+
+      try {
+        const res = await fetch('/users/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await res.json();
+        const msg = document.getElementById('message');
+
+        if (res.ok) {
+          msg.textContent = '✅ User created successfully';
+          msg.className = 'message success';
+          e.target.reset();
+        } else {
+          msg.textContent = '❌ ' + (data.error || 'Failed to create user');
+          msg.className = 'message error';
+        }
+      } catch (err) {
+        document.getElementById('message').textContent = '❌ Error: ' + err.message;
+        document.getElementById('message').className = 'message error';
+      }
+    });
+  </script>
 </body>
 </html>

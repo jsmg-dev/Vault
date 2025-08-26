@@ -3,10 +3,11 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// Create a new user (form or API)
+// ✅ Create a new user (form or API)
 router.post('/create', (req, res) => {
   const { name, username, password, role } = req.body;
 
+  // Validation
   if (!name || !username || !password || !role) {
     return res.status(400).json({ error: 'All fields are required' });
   }
@@ -27,17 +28,24 @@ router.post('/create', (req, res) => {
       if (err) return res.status(500).json({ error: err.message });
 
       // Detect if it's a form submission
-      const isForm = req.headers['content-type'].includes('application/x-www-form-urlencoded');
+      const contentType = req.headers['content-type'] || '';
+      const isForm = contentType.includes('application/x-www-form-urlencoded');
+
       if (isForm) {
+        // If form submit → redirect
         return res.redirect('/pages/user-management.html');
       }
 
-      res.status(201).json({ message: 'User created successfully', userId: this.lastID });
+      // If API call → return JSON
+      res.status(201).json({
+        message: 'User created successfully',
+        userId: this.lastID,
+      });
     });
   });
 });
 
-// List all users
+// ✅ List all users
 router.get('/list', (req, res) => {
   db.all(`SELECT id, name, username, role FROM users`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -45,21 +53,7 @@ router.get('/list', (req, res) => {
   });
 });
 
-// List all users (only for admins)
-router.get('/list', (req, res) => {
-  const userRole = req.session?.userRole;
-
-  if (!userRole) return res.status(401).json({ error: 'Unauthorized. Please login.' });
-  if (userRole !== 'admin') return res.status(403).json({ error: 'Forbidden. Admins only.' });
-
-  db.all(`SELECT id, name, username, role FROM users`, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
-});
-
-module.exports = router;
-// Delete a user by ID
+// ✅ Delete a user by ID
 router.delete('/delete/:id', (req, res) => {
   const userId = req.params.id;
 
@@ -75,3 +69,6 @@ router.delete('/delete/:id', (req, res) => {
     res.json({ message: 'User deleted successfully' });
   });
 });
+
+// ✅ Export router at the very end
+module.exports = router;

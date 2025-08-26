@@ -112,7 +112,7 @@
   <div class="container">
     
     <div class="image-section">
-       <img src="/assets/images/logo.png" alt="Vault SBBF Logo" style="height: 50px; margin-right: 15px;" />
+       <img src="/assets/images/logo.png" alt="Vault SBBF Logo" style="height: 170px; margin-right: 15px;" />
     </div>
 
     <div class="form-section">
@@ -120,7 +120,7 @@
         <!-- Logo image here -->
         <img src="/assets/images/Vaultlogo.png" alt="Logo" class="logo">
         <i class="fas fa-user-shield"></i>
-        <h2>Login</h2>
+       
         <form action="/login" method="POST">
           <input type="text" name="username" placeholder="Username" required />
           <input type="password" name="password" placeholder="Password" required />
@@ -131,4 +131,34 @@
   </div>
 
 </body>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+          credentials: 'include'   // ✅ saves session cookie
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          // redirect to dashboard
+          window.location.href = '/pages/dashboard.html';
+        } else {
+          alert(data.message || 'Login failed');
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        alert('Something went wrong. Please try again.');
+      }
+    });
+  </script>
+
 </html>

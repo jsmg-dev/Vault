@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>EMI Calculator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #ffffff);
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: #1f2a44;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar-title {
+      font-size: 20px;
+      color: white;
+      font-weight: 600;
+    }
+    .navbar-right {
+      display: flex;
+      gap: 10px;
+    }
+    .back-btn, .logout-btn {
+      background: #f44336;
+      padding: 8px 14px;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: 500;
+    }
+    .back-btn:hover { background-color: #b71c1c; }
+    .logout-btn:hover { background-color: #d32f2f; }
+
+    /* EMI Form */
+    h1 {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .form-container {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      margin: 30px auto;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #004aad;
+      color: white;
+      border: none;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background: #00307a;
+    }
+
+    /* Result Box */
+    .result-box {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      display: none;
+    }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 16px;
+    }
+    .result-row strong {
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <span class="navbar-title">EMI Calculator</span>
+    <div class="navbar-right">
+      <a href="dashboard.html" class="back-btn">⬅ Back</a>
+      <a href="/auth/logout" class="logout-btn">Logout</a>
+    </div>
+  </div>
+
+  <h1>Loan EMI Calculator</h1>
+
+  <div class="form-container">
+    <form id="emiForm" autocomplete="off">
+      <label for="amount">Loan Amount (₹)</label>
+      <input type="number" id="amount" name="amount" placeholder="Enter loan amount" required />
+
+      <label for="rate">Interest Rate (%)</label>
+      <input type="number" id="rate" name="rate" placeholder="Enter annual interest rate" step="0.01" required />
+
+      <label for="months">Loan Duration</label>
+      <input type="number" id="months" name="months" placeholder="Enter duration in months" required />
+
+      <label for="mode">Calculation Mode</label>
+      <select id="mode" name="mode">
+        <option value="daily">Daily EMI</option>
+        <option value="monthly" selected>Monthly EMI</option>
+        <option value="yearly">Yearly EMI</option>
+      </select>
+
+      <button type="submit">Calculate</button>
+    </form>
+
+    <!-- Results -->
+    <div class="result-box" id="resultBox">
+      <div class="result-row"><strong id="emiLabel">Monthly EMI:</strong> <span id="emiValue">₹0</span></div>
+      <div class="result-row"><strong>Principal Amount:</strong> <span id="principalValue">₹0</span></div>
+      <div class="result-row"><strong>Total Interest:</strong> <span id="interestValue">₹0</span></div>
+      <div class="result-row"><strong>Total Amount:</strong> <span id="totalValue">₹0</span></div>
+    </div>
+  </div>
+
+  <script>
+    function calculateEMI(amount, rate, months, mode = "monthly") {
+      let emi = 0, n = 0, r = 0;
+
+      if (mode === "monthly") {
+        n = months;
+        r = rate / 12 / 100;
+      } else if (mode === "yearly") {
+        n = months / 12;
+        r = rate / 100;
+      } else if (mode === "daily") {
+        n = months * 30; // approx conversion
+        r = rate / 365 / 100;
+      }
+
+      emi = (amount * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+      const totalPayment = emi * n;
+      const totalInterest = totalPayment - amount;
+
+      return { emi: emi.toFixed(2), totalPayment: totalPayment.toFixed(2), totalInterest: totalInterest.toFixed(2) };
+    }
+
+    document.getElementById('emiForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const amount = parseFloat(document.getElementById('amount').value);
+      const rate = parseFloat(document.getElementById('rate').value);
+      const months = parseInt(document.getElementById('months').value);
+      const mode = document.getElementById('mode').value;
+
+      if (!amount || !rate || !months) {
+        alert("❌ Please fill all fields correctly!");
+        return;
+      }
+
+      const result = calculateEMI(amount, rate, months, mode);
+
+      document.getElementById('emiLabel').textContent = 
+        mode.charAt(0).toUpperCase() + mode.slice(1) + " EMI:";
+      document.getElementById('emiValue').textContent = "₹" + result.emi;
+      document.getElementById('principalValue').textContent = "₹" + amount.toLocaleString();
+      document.getElementById('interestValue').textContent = "₹" + parseFloat(result.totalInterest).toLocaleString();
+      document.getElementById('totalValue').textContent = "₹" + parseFloat(result.totalPayment).toLocaleString();
+
+      document.getElementById('resultBox').style.display = "block";
+    });
+  </script>
+
+</body>
+</html>
