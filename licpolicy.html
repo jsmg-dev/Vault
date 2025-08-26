@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LIC Policy Input Form</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #004aad, #007bff);
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      color: white;
+      text-align: center;
+    }
+
+    .form-container {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      margin: 30px auto;
+      width: 90%;
+      max-width: 700px;
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #004aad;
+      color: white;
+      border: none;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background: #00307a;
+    }
+
+    .message {
+      margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .required { color: red; }
+  </style>
+</head>
+<body>
+
+  <h2>LIC Policy Input Form</h2>
+
+  <div class="form-container">
+    <form id="policyForm" autocomplete="off">
+
+      <!-- Personal Info -->
+      <label for="fullname">Full Name <span class="required">*</span></label>
+      <input type="text" id="fullname" name="fullname" placeholder="Full Name" required />
+
+      <label for="dob">Date of Birth <span class="required">*</span></label>
+      <input type="date" id="dob" name="dob" required />
+
+      <label for="gender">Gender</label>
+      <select id="gender" name="gender">
+        <option value="">--Select--</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <label for="marital">Marital Status</label>
+      <select id="marital" name="marital">
+        <option value="">--Select--</option>
+        <option value="Single">Single</option>
+        <option value="Married">Married</option>
+        <option value="Divorced">Divorced</option>
+      </select>
+
+      <label for="aadhaar">PAN / Aadhaar</label>
+      <input type="text" id="aadhaar" name="aadhaar" />
+
+      <!-- Contact Info -->
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" />
+
+      <label for="mobile">Mobile Number</label>
+      <input type="tel" id="mobile" name="mobile" />
+
+      <label for="address">Address</label>
+      <textarea id="address" name="address"></textarea>
+
+      <!-- Policy Info -->
+      <label for="startDate">Policy Start Date</label>
+      <input type="date" id="startDate" name="startDate" />
+
+      <label for="mode">Mode of Premium Payment</label>
+      <select id="mode" name="mode">
+        <option value="">--Select--</option>
+        <option value="monthly">Monthly</option>
+        <option value="quarterly">Quarterly</option>
+        <option value="half-yearly">Half-Yearly</option>
+        <option value="yearly">Yearly</option>
+      </select>
+
+      <label for="nextDate">Next Policy Premium Date</label>
+      <input type="date" id="nextDate" name="nextDate" />
+
+      <label for="sumAssured">Sum Assured</label>
+      <input type="number" id="sumAssured" name="sumAssured" />
+
+      <label for="policyTerm">Policy Term (Years)</label>
+      <input type="number" id="policyTerm" name="policyTerm" />
+
+      <label for="nominee">Nominee Name</label>
+      <input type="text" id="nominee" name="nominee" />
+
+      <label for="nomineeRelation">Nominee Relationship</label>
+      <input type="text" id="nomineeRelation" name="nomineeRelation" />
+
+      <!-- Health -->
+      <label for="height">Height (cm)</label>
+      <input type="number" id="height" name="height" />
+
+      <label for="weight">Weight (kg)</label>
+      <input type="number" id="weight" name="weight" />
+
+      <label for="health">Health / Lifestyle</label>
+      <textarea id="health" name="health"></textarea>
+
+      <!-- Banking -->
+      <label for="bankAccount">Bank Account Number</label>
+      <input type="text" id="bankAccount" name="bankAccount" />
+
+      <label for="ifsc">IFSC Code</label>
+      <input type="text" id="ifsc" name="ifsc" />
+
+      <label for="bankName">Bank Name</label>
+      <input type="text" id="bankName" name="bankName" />
+
+      <!-- Agent -->
+      <label for="agentCode">Agent Code</label>
+      <input type="text" id="agentCode" name="agentCode" />
+
+      <label for="branchCode">Branch Code</label>
+      <input type="text" id="branchCode" name="branchCode" />
+
+      <button type="submit">Submit</button>
+      <div class="message" id="message"></div>
+    </form>
+  </div>
+
+  <script>
+    function calculateNextDate(startDate, mode) {
+      let date = new Date(startDate);
+      if (isNaN(date)) return "";
+
+      switch (mode) {
+        case "monthly":
+          date.setMonth(date.getMonth() + 1);
+          break;
+        case "quarterly":
+          date.setMonth(date.getMonth() + 3);
+          break;
+        case "half-yearly":
+          date.setMonth(date.getMonth() + 6);
+          break;
+        case "yearly":
+          date.setFullYear(date.getFullYear() + 1);
+          break;
+        default:
+          return "";
+      }
+      return date.toISOString().split("T")[0];
+    }
+
+    document.getElementById("mode").addEventListener("change", function() {
+      let startDate = document.getElementById("startDate").value;
+      let mode = this.value;
+      let nextDate = calculateNextDate(startDate, mode);
+      if (nextDate) {
+        document.getElementById("nextDate").value = nextDate;
+      }
+    });
+
+    document.getElementById("startDate").addEventListener("change", function() {
+      let mode = document.getElementById("mode").value;
+      let startDate = this.value;
+      let nextDate = calculateNextDate(startDate, mode);
+      if (nextDate) {
+        document.getElementById("nextDate").value = nextDate;
+      }
+    });
+
+    document.getElementById("policyForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      document.getElementById("message").textContent = "✅ Form submitted successfully!";
+      document.getElementById("message").className = "message success";
+      this.reset();
+    });
+  </script>
+</body>
+</html>

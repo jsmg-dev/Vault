@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LIC Policy Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root{
+      --nav:#1f2a44;
+      --accent:#9b59b6;
+      --primary:#004aad;
+      --danger:#f44336;
+      --danger-dark:#d32f2f;
+      --bg:#f5f6fa;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:#333;
+    }
+
+    /* Navbar (same theme) */
+    .navbar{
+      background:var(--nav);
+      padding:15px 25px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .navbar-title{color:#fff;font-weight:600;font-size:20px}
+    .navbar-right{display:flex;gap:10px}
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 14px;border:none;border-radius:8px;
+      font-weight:600;cursor:pointer;text-decoration:none
+    }
+    .btn-back,.btn-logout{background:var(--danger);color:#fff}
+    .btn-back:hover{background:#b71c1c}
+    .btn-logout:hover{background:var(--danger-dark)}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{background:#00307a}
+
+    /* Container */
+    .container{
+      max-width:1100px;margin:24px auto;padding:0 16px;
+    }
+
+    .page-card{
+      background:var(--card);
+      border-radius:16px;
+      box-shadow:0 8px 24px rgba(0,0,0,.12);
+      padding:22px;
+    }
+
+    .page-header{
+      display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+      margin-bottom:8px;
+    }
+    .page-title{
+      margin:0;color:var(--accent);font-size:24px;font-weight:700;
+    }
+    .subtitle{color:var(--muted);font-size:14px}
+
+    /* Section */
+    .section{
+      margin-top:18px;padding:16px;border:1px solid var(--border);border-radius:12px;
+      background:#fcfbff;
+    }
+    .section h3{
+      margin:0 0 14px;color:var(--accent);font-size:16px;font-weight:700;
+      display:flex;align-items:center;gap:10px
+    }
+    .hint{font-size:12px;color:var(--muted);margin-left:auto}
+
+    /* Grid form */
+    .grid{
+      display:grid;gap:16px;
+      grid-template-columns:repeat(12,minmax(0,1fr));
+    }
+    .col-6{grid-column:span 6}
+    .col-4{grid-column:span 4}
+    .col-8{grid-column:span 8}
+    .col-12{grid-column:span 12}
+
+    @media (max-width:900px){
+      .col-6,.col-4,.col-8{grid-column:span 12}
+    }
+
+    label{display:block;font-weight:600;margin-bottom:6px}
+    .required{color:#e11d48}
+    input,select,textarea{
+      width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;font-size:14px;
+      background:#fff
+    }
+    textarea{resize:vertical;min-height:80px}
+
+    /* Footer */
+    .form-footer{
+      display:flex;gap:12px;justify-content:flex-end;margin-top:18px
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;right:20px;bottom:20px;
+      background:#10b981;color:#fff;padding:12px 14px;border-radius:10px;
+      box-shadow:0 6px 18px rgba(0,0,0,.18);display:none;z-index:9999
+    }
+    .toast.error{background:#ef4444}
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <span class="navbar-title">Policy Management</span>
+    <div class="navbar-right">
+      <a href="/pages/dashboard.html" class="btn btn-back"><i class="fa fa-arrow-left"></i>Back</a>
+      <a href="/auth/logout" class="btn btn-logout"><i class="fa fa-sign-out-alt"></i>Logout</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="page-card">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Create New LIC Policy</h1>
+          <div class="subtitle">Only <strong>Name</strong> and <strong>DOB</strong> are mandatory. Next Premium Date auto-fills from Start Date + Mode (editable).</div>
+        </div>
+        <button type="button" class="btn btn-primary" id="quickSaveBtn"><i class="fa fa-save"></i> Quick Save</button>
+      </div>
+
+      <form id="policyForm" class="form" autocomplete="off">
+        <!-- Personal -->
+        <div class="section">
+          <h3><i class="fa fa-user"></i> Personal Information</h3>
+          <div class="grid">
+            <div class="col-6">
+              <label for="fullname">Full Name <span class="required">*</span></label>
+              <input type="text" id="fullname" name="fullname" placeholder="Enter full name" required />
+            </div>
+            <div class="col-6">
+              <label for="dob">Date of Birth <span class="required">*</span></label>
+              <input type="date" id="dob" name="dob" required />
+            </div>
+            <div class="col-4">
+              <label for="gender">Gender</label>
+              <select id="gender" name="gender">
+                <option value="">-- Select --</option>
+                <option>Male</option><option>Female</option><option>Other</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <label for="marital_status">Marital Status</label>
+              <select id="marital_status" name="marital_status">
+                <option value="">-- Select --</option>
+                <option>Single</option><option>Married</option><option>Divorced</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <label for="aadhaar_pan">PAN / Aadhaar</label>
+              <input type="text" id="aadhaar_pan" name="aadhaar_pan" placeholder="ABCDE1234F / 1234-5678-9012" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="section">
+          <h3><i class="fa fa-address-card"></i> Contact Information</h3>
+          <div class="grid">
+            <div class="col-6">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="example@mail.com" />
+            </div>
+            <div class="col-6">
+              <label for="mobile">Mobile Number</label>
+              <input type="tel" id="mobile" name="mobile" placeholder="10-digit number" />
+            </div>
+            <div class="col-12">
+              <label for="address">Address</label>
+              <textarea id="address" name="address" placeholder="House / Street, Area, City, PIN"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Policy -->
+        <div class="section">
+          <h3>
+            <i class="fa fa-file-shield"></i> Policy Details
+            <span class="hint"><i class="fa fa-lightbulb"></i> Next Premium Date auto-fills from Start Date + Mode</span>
+          </h3>
+          <div class="grid">
+            <div class="col-4">
+              <label for="start_date">Policy Start Date</label>
+              <input type="date" id="start_date" name="start_date" />
+            </div>
+            <div class="col-4">
+              <label for="mode_of_payment">Mode of Premium Payment</label>
+              <select id="mode_of_payment" name="mode_of_payment">
+                <option value="">-- Select --</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="half-yearly">Half-Yearly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <label for="next_premium_date">Next Policy Premium Date</label>
+              <input type="date" id="next_premium_date" name="next_premium_date" />
+            </div>
+            <div class="col-4">
+              <label for="sum_assured">Sum Assured</label>
+              <input type="number" id="sum_assured" name="sum_assured" placeholder="e.g. 500000" />
+            </div>
+            <div class="col-4">
+              <label for="policy_term">Policy Term (Years)</label>
+              <input type="number" id="policy_term" name="policy_term" placeholder="e.g. 20" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Nominee -->
+        <div class="section">
+          <h3><i class="fa fa-people-roof"></i> Nominee Details</h3>
+          <div class="grid">
+            <div class="col-6">
+              <label for="nominee_name">Nominee Name</label>
+              <input type="text" id="nominee_name" name="nominee_name" />
+            </div>
+            <div class="col-6">
+              <label for="nominee_relation">Nominee Relationship</label>
+              <input type="text" id="nominee_relation" name="nominee_relation" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Health -->
+        <div class="section">
+          <h3><i class="fa fa-heart-pulse"></i> Health & Lifestyle</h3>
+          <div class="grid">
+            <div class="col-4">
+              <label for="height_cm">Height (cm)</label>
+              <input type="number" id="height_cm" name="height_cm" />
+            </div>
+            <div class="col-4">
+              <label for="weight_kg">Weight (kg)</label>
+              <input type="number" id="weight_kg" name="weight_kg" />
+            </div>
+            <div class="col-12">
+              <label for="health_lifestyle">Health / Lifestyle</label>
+              <textarea id="health_lifestyle" name="health_lifestyle" placeholder="e.g., Non-smoker, regular exercise"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Banking -->
+        <div class="section">
+          <h3><i class="fa fa-building-columns"></i> Banking Information</h3>
+          <div class="grid">
+            <div class="col-6">
+              <label for="bank_account">Bank Account Number</label>
+              <input type="text" id="bank_account" name="bank_account" />
+            </div>
+            <div class="col-6">
+              <label for="ifsc_code">IFSC Code</label>
+              <input type="text" id="ifsc_code" name="ifsc_code" />
+            </div>
+            <div class="col-12">
+              <label for="bank_name">Bank Name</label>
+              <input type="text" id="bank_name" name="bank_name" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent -->
+        <div class="section">
+          <h3><i class="fa fa-id-badge"></i> Agent & Branch</h3>
+          <div class="grid">
+            <div class="col-6">
+              <label for="agent_code">Agent Code</label>
+              <input type="text" id="agent_code" name="agent_code" />
+            </div>
+            <div class="col-6">
+              <label for="branch_code">Branch Code</label>
+              <input type="text" id="branch_code" name="branch_code" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <button type="reset" class="btn" style="background:#e5e7eb;color:#111">
+            <i class="fa fa-rotate-left"></i> Reset
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-paper-plane"></i> Submit Policy
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // --- Auto Next Premium Date ---
+    const startEl = document.getElementById('start_date');
+    const modeEl  = document.getElementById('mode_of_payment');
+    const nextEl  = document.getElementById('next_premium_date');
+
+    function calcNextDate() {
+      const start = startEl.value ? new Date(startEl.value) : null;
+      const mode  = modeEl.value;
+      if (!start || !mode) return;
+
+      const d = new Date(start);
+      switch (mode) {
+        case 'monthly':     d.setMonth(d.getMonth() + 1); break;
+        case 'quarterly':   d.setMonth(d.getMonth() + 3); break;
+        case 'half-yearly': d.setMonth(d.getMonth() + 6); break;
+        case 'yearly':      d.setFullYear(d.getFullYear() + 1); break;
+      }
+      nextEl.value = d.toISOString().split('T')[0];
+    }
+    startEl.addEventListener('change', calcNextDate);
+    modeEl.addEventListener('change',  calcNextDate);
+
+    // --- Toast helper ---
+    const toast = document.getElementById('toast');
+    function showToast(msg, isError=false){
+      toast.textContent = msg;
+      toast.className = 'toast' + (isError ? ' error' : '');
+      toast.style.display = 'block';
+      setTimeout(()=> toast.style.display = 'none', 2500);
+    }
+
+    // --- Submit (POST /policies/add) ---
+    const form = document.getElementById('policyForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Required fields check
+      const fullname = document.getElementById('fullname').value.trim();
+      const dob = document.getElementById('dob').value;
+      if (!fullname || !dob) {
+        showToast('Please fill Name and DOB.', true);
+        return;
+      }
+
+      const payload = {
+        fullname,
+        dob,
+        gender: document.getElementById('gender').value,
+        marital_status: document.getElementById('marital_status').value,
+        aadhaar_pan: document.getElementById('aadhaar_pan').value,
+        email: document.getElementById('email').value,
+        mobile: document.getElementById('mobile').value,
+        address: document.getElementById('address').value,
+        start_date: document.getElementById('start_date').value,
+        mode_of_payment: document.getElementById('mode_of_payment').value,
+        next_premium_date: document.getElementById('next_premium_date').value,
+        sum_assured: document.getElementById('sum_assured').value,
+        policy_term: document.getElementById('policy_term').value,
+        nominee_name: document.getElementById('nominee_name').value,
+        nominee_relation: document.getElementById('nominee_relation').value,
+        height_cm: document.getElementById('height_cm').value,
+        weight_kg: document.getElementById('weight_kg').value,
+        health_lifestyle: document.getElementById('health_lifestyle').value,
+        bank_account: document.getElementById('bank_account').value,
+        ifsc_code: document.getElementById('ifsc_code').value,
+        bank_name: document.getElementById('bank_name').value,
+        agent_code: document.getElementById('agent_code').value,
+        branch_code: document.getElementById('branch_code').value
+      };
+
+      try {
+        const res = await fetch('/policies/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Failed to save policy');
+        }
+        showToast('✅ Policy saved successfully');
+        form.reset();
+      } catch (err) {
+        showToast('❌ ' + err.message, true);
+      }
+    });
+
+    // Optional: Quick Save clicks submit
+    document.getElementById('quickSaveBtn').addEventListener('click', () => {
+      form.requestSubmit();
+    });
+  </script>
+</body>
+</html>

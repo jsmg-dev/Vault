@@ -260,3 +260,91 @@ app.get('/emi', (req, res) => {
 
   res.json({ emi: emi.toFixed(2) });
 });
+// === LIC Policies Table Setup ===
+db.run(`
+  CREATE TABLE IF NOT EXISTS lic_policy_details (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    policy_number TEXT,
+    customer_name TEXT,
+    plan_name TEXT,
+    sum_assured REAL,
+    premium REAL,
+    start_date TEXT,
+    maturity_date TEXT,
+    agent_code TEXT,
+    branch_code TEXT
+  )
+`);
+
+// === Save a New Policy ===
+app.post("/policies/add", (req, res) => {
+  const {
+    policy_number,
+    customer_name,
+    plan_name,
+    sum_assured,
+    premium,
+    start_date,
+    maturity_date,
+    agent_code,
+    branch_code,
+  } = req.body;
+
+  const sql = `
+    INSERT INTO lic_policy_details 
+    (policy_number, customer_name, plan_name, sum_assured, premium, start_date, maturity_date, agent_code, branch_code) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  db.run(
+    sql,
+    [
+      policy_number,
+      customer_name,
+      plan_name,
+      sum_assured,
+      premium,
+      start_date,
+      maturity_date,
+      agent_code,
+      branch_code,
+    ],
+    function (err) {
+      if (err) {
+        console.error("❌ Insert error:", err.message);
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ success: true, id: this.lastID });
+    }
+  );
+});
+
+// === Fetch All Policies ===
+app.get("/policies", (req, res) => {
+  db.all("SELECT * FROM lic_policy_details", [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
+// === Auth Me API ===
+app.get("/auth/me", (req, res) => {
+  if (!req.session.user)
+    return res.status(401).json({ error: "Not logged in" });
+  res.json({
+    role: req.session.user.role,
+    username: req.session.user.username,
+  });
+});
+
+// === 404 Fallback ===
+app.use((req, res) => {
+  res.status(404).send("Page not found");
+});
+
+// === Start Server ===
+app.listen(port, () => {
+  console.log(`🚀 Server running at http://localhost:${port}`);
+});
