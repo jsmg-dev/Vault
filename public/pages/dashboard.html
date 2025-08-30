@@ -197,29 +197,36 @@
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
-  const card = document.getElementById("userManagementCard");
-  if (!card) return;
+  const userCard = document.getElementById("userManagementCard");
+  const licCard = document.querySelector(".card-left.lic"); 
+  const allCards = document.querySelectorAll(".card-left");
+  const rightPanel = document.querySelector(".right-panel");
 
-  // Ensure hidden by default (in case HTML didn’t load the class for some reason)
-  card.classList.add("hidden");
+  if (userCard) userCard.classList.add("hidden"); // hide by default
 
   try {
     const res = await fetch('/auth/me', { credentials: 'include' });
-    if (!res.ok) {
-      // Not logged in or no session -> keep hidden
-      return;
-    }
+    if (!res.ok) return; 
     const user = await res.json();
     const role = (user.role || '').toLowerCase();
 
-    if (role === 'admin') {
-      card.classList.remove('hidden'); // ✅ show for admin
-    } else {
-      card.classList.add('hidden');    // ✅ keep hidden for staff/others
+    // ✅ Admin → show User Management
+    if (role === 'admin' && userCard) {
+      userCard.classList.remove("hidden");
+    }
+
+    // ✅ LIC role → show only LIC Policy Management card
+    if (role === 'lic') {
+      // hide all left-panel cards
+      allCards.forEach(c => c.classList.add("hidden"));
+      // show only LIC Policy Management
+      if (licCard) licCard.classList.remove("hidden");
+
+      // also hide right-panel (stats & charts)
+      if (rightPanel) rightPanel.classList.add("hidden");
     }
   } catch (err) {
     console.error("Error fetching user:", err);
-    // On error, keep hidden
   }
 });
 </script>
