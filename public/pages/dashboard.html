@@ -104,11 +104,17 @@
   <div class="header-left">
     <img src="/assets/images/Vaultlogo1.jpg" alt="Vault Logo" style="height: 40px; margin-right: 15px;" />
     <a href="#"><button class="dashboard-button">Dashboard</button></a>
+<a href="lic-dashboard.html"><button class="dashboard-button" id="licDashboardBtn">LIC Dashboard</button></a>
+
   </div>
   <div class="header-right">
     <a href="/auth/logout"><button class="logout-button">Logout</button></a>
   </div>
 </header>
+<div class="right-panel hidden" id="licDashboard">
+  <h2>LIC Dashboard</h2>
+  <canvas id="licChart"></canvas>
+</div>
 
 <div class="dashboard-container">
   <!-- LEFT PANEL -->

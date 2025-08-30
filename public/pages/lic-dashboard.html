@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LIC Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f4f6f9;
+      color: #333;
+    }
+
+    header {
+      background: #34495e;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .right-panel {
+      flex: 1;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    canvas {
+      width: 100% !important;
+      max-height: 300px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LIC Dashboard</h1>
+    <div>
+      <i class="fas fa-user-circle"></i> LIC User
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="right-panel">
+      <!-- Policy Chart -->
+      <div class="card">
+        <h2>Policies Overview</h2>
+        <canvas id="policyChart"></canvas>
+      </div>
+
+      <!-- Premium Collection -->
+      <div class="card">
+        <h2>Premium Collection</h2>
+        <canvas id="premiumChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Policy chart
+    const ctx1 = document.getElementById('policyChart').getContext('2d');
+    new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Policies Issued',
+          data: [12, 19, 14, 20, 16, 25],
+          backgroundColor: '#3498db'
+        }]
+      },
+      options: { responsive: true }
+    });
+
+    // Premium collection chart
+    const ctx2 = document.getElementById('premiumChart').getContext('2d');
+    new Chart(ctx2, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Premium Collected (₹)',
+          data: [5000, 7000, 6500, 8000, 7500, 9000],
+          borderColor: '#2ecc71',
+          fill: false,
+          tension: 0.3
+        }]
+      },
+      options: { responsive: true }
+    });
+  </script>
+</body>
+</html>
