@@ -41,23 +41,39 @@
     .dashboard-container { display: flex; height: calc(100vh - 60px); overflow: hidden; }
     .left-panel {
       display: flex; flex-direction: column; gap: 20px; width: 200px; padding: 20px;
-      background: #1f2a44;
+      background: #3a4a75;
     }
-    .left-panel a { text-decoration: none; }
-    .card-left {
-      color: white; text-align: center; padding: 20px; border-radius: 10px;
-      font-weight: 600; font-size: 16px; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2); transition: transform 0.3s, box-shadow 0.3s;
-    }
+  .card-left {
+  color: white; 
+  text-align: center; 
+  padding: 12px 10px;  /* smaller padding */
+  border-radius: 10px;
+   border: 1px solid #555; /* subtle border */
+  font-weight: 600; 
+  font-size: 15px;      /* smaller font */
+  display: flex; 
+  flex-direction: column;
+  align-items: center; 
+  text-decoration: none;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2); 
+  transition: transform 0.3s, box-shadow 0.3s;
+  min-height: 60px;      /* optional uniform height */
+}
+
+.card-left i {
+  font-size: 20px;       /* smaller icon */
+  margin-top: 4px;
+}
+
     .card-left i { font-size: 24px; margin-top: 8px; }
     .card-left:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(0,0,0,0.25); }
-    .user      { background: #3498db; }
-    .customer  { background: #2ecc71; }
-    .deposit   { background: #f1c40f; color: #2c3e50; }
-    .reports   { background: #1abc9c; }
-    .emi   { background: #f093fb; }
-     .lic   { background: #3498db; }
+    .user      { background: #2b395c; }
+    .customer  { background: #2b395c; }
+    .deposit   { background: #2b395c; }
+    .reports   { background: #2b395c; }
+    .emi   { background: #2b395c; }
+     .lic   { background: #2b395c; }
       .hidden {
   display: none !important;
 }
