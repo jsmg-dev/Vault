@@ -37,7 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // === Import Routes ===
 const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
+
 const customerRoutes = require('./routes/customers');
 const depositRoutes = require('./routes/deposits');
 const reportsRoutes = require('./routes/reports');
@@ -236,6 +236,8 @@ app.get('/auth/me', (req, res) => {
 
   res.json({ role: req.session.user.role, username: req.session.user.username });
 });
+
+
 // EMI API Route
 app.get('/emi', (req, res) => {
   let { amount, rate, months } = req.query;
@@ -264,87 +266,82 @@ app.get('/emi', (req, res) => {
 db.run(`
   CREATE TABLE IF NOT EXISTS lic_policy_details (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    policy_number TEXT,
-    customer_name TEXT,
+    policy_no TEXT NOT NULL,
+    fullname TEXT NOT NULL,
+    dob TEXT NOT NULL,
+    gender TEXT,
+    marital_status TEXT,
+    aadhaar_pan TEXT,
+    email TEXT,
+    mobile TEXT,
+    address TEXT,
     plan_name TEXT,
-    sum_assured REAL,
-    premium REAL,
     start_date TEXT,
-    maturity_date TEXT,
+    end_date TEXT,
+    mode_of_payment TEXT,
+    next_premium_date TEXT,
+    sum_assured REAL,
+    policy_term INTEGER,
+    premium_term INTEGER,
+    premium REAL,
+    maturity_value REAL,
+    nominee_name TEXT,
+    nominee_relation TEXT,
+    height_cm REAL,
+    weight_kg REAL,
+    health_lifestyle TEXT,
+    bank_account TEXT,
+    ifsc_code TEXT,
+    bank_name TEXT,
     agent_code TEXT,
-    branch_code TEXT
+    branch_code TEXT,
+    status TEXT DEFAULT 'Active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
 `);
 
 // === Save a New Policy ===
 app.post("/policies/add", (req, res) => {
   const {
-    policy_number,
-    customer_name,
-    plan_name,
-    sum_assured,
-    premium,
-    start_date,
-    maturity_date,
-    agent_code,
-    branch_code,
+    policy_no, fullname, dob, gender, marital_status, aadhaar_pan, email,
+    mobile, address, plan_name, start_date, end_date, mode_of_payment,
+    next_premium_date, sum_assured, policy_term, premium_term, premium,
+    maturity_value, nominee_name, nominee_relation, height_cm, weight_kg,
+    health_lifestyle, bank_account, ifsc_code, bank_name, agent_code,
+    branch_code, status
   } = req.body;
 
   const sql = `
-    INSERT INTO lic_policy_details 
-    (policy_number, customer_name, plan_name, sum_assured, premium, start_date, maturity_date, agent_code, branch_code) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO lic_policy_details (
+      policy_no, fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address,
+      plan_name, start_date, end_date, mode_of_payment, next_premium_date, sum_assured,
+      policy_term, premium_term, premium, maturity_value, nominee_name, nominee_relation,
+      height_cm, weight_kg, health_lifestyle, bank_account, ifsc_code, bank_name,
+      agent_code, branch_code, status
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `;
 
-  db.run(
-    sql,
-    [
-      policy_number,
-      customer_name,
-      plan_name,
-      sum_assured,
-      premium,
-      start_date,
-      maturity_date,
-      agent_code,
-      branch_code,
-    ],
-    function (err) {
-      if (err) {
-        console.error("❌ Insert error:", err.message);
-        return res.status(500).json({ error: err.message });
-      }
-      res.json({ success: true, id: this.lastID });
+  db.run(sql, [
+    policy_no, fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address,
+    plan_name, start_date, end_date, mode_of_payment, next_premium_date, sum_assured,
+    policy_term, premium_term, premium, maturity_value, nominee_name, nominee_relation,
+    height_cm, weight_kg, health_lifestyle, bank_account, ifsc_code, bank_name,
+    agent_code, branch_code, status
+  ], function(err) {
+    if (err) {
+      console.error("❌ Insert error:", err.message);
+      return res.status(500).json({ error: "Failed to add policy" });
     }
-  );
+    res.json({ success: true, id: this.lastID });
+  });
 });
 
 // === Fetch All Policies ===
 app.get("/policies", (req, res) => {
   db.all("SELECT * FROM lic_policy_details", [], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+    if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
-// === Auth Me API ===
-app.get("/auth/me", (req, res) => {
-  if (!req.session.user)
-    return res.status(401).json({ error: "Not logged in" });
-  res.json({
-    role: req.session.user.role,
-    username: req.session.user.username,
-  });
-});
 
-// === 404 Fallback ===
-app.use((req, res) => {
-  res.status(404).send("Page not found");
-});
-
-// === Start Server ===
-app.listen(port, () => {
-  console.log(`🚀 Server running at http://localhost:${port}`);
-});

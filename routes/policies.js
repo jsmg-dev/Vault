@@ -44,8 +44,8 @@ router.post('/add', (req, res) => {
       plan_name, start_date, end_date, mode_of_payment, next_premium_date, sum_assured,
       policy_term, premium_term, premium, maturity_value, nominee_name, nominee_relation,
       height_cm, weight_kg, health_lifestyle, bank_account, ifsc_code, bank_name,
-      agent_code, branch_code, status
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      agent_code, branch_code, status, created_at
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'))
   `;
 
   db.run(sql, [

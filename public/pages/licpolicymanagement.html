@@ -110,41 +110,52 @@
 
   <script>
     async function loadPolicies() {
-      const res = await fetch('/policies/list', { method: 'GET', headers: { 'Cache-Control': 'no-cache' } });
-      const policies = await res.json();
-      const tbody = document.getElementById('policyBody');
-      tbody.innerHTML = '';
-      policies.forEach(p => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="actions">
-            <button class="icon-btn icon-view" title="Edit" onclick="editPolicy(${p.id})">✏️</button>
-            <button class="icon-btn icon-delete" title="Delete" onclick="deletePolicy(${p.id})">🗑️</button>
-          </td>
-          <td>${p.id}</td>
-          <td>${p.policy_no || ''}</td>
-          <td>${p.fullname || ''}</td>
-          <td>${p.plan_name || ''}</td>
-          <td>${p.policy_term || ''}</td>
-          <td>${p.premium_term || ''}</td>
-          <td>${p.mode_of_payment || ''}</td>
-          <td>${p.start_date || ''}</td>
-          <td>${p.end_date || ''}</td>
-          <td>${p.premium || ''}</td>
-          <td>${p.sum_assured || ''}</td>
-          <td>${p.maturity_value || ''}</td>
-          <td>${p.nominee_name || ''}</td>
-          <td>${p.status || ''}</td>
-        `;
-        tbody.appendChild(row);
-      });
+      try {
+        // ✅ fixed API URL (was `/policies/list`, now `/policies`)
+        const res = await fetch('/policies', { method: 'GET', headers: { 'Cache-Control': 'no-cache' } });
+        if (!res.ok) throw new Error("Failed to load policies");
+        
+        const policies = await res.json();
+        const tbody = document.getElementById('policyBody');
+        tbody.innerHTML = '';
+
+        policies.forEach(p => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="actions">
+              <button class="icon-btn icon-view" title="Edit" onclick="editPolicy(${p.id})">✏️</button>
+              <button class="icon-btn icon-delete" title="Delete" onclick="deletePolicy(${p.id})">🗑️</button>
+            </td>
+            <td>${p.id}</td>
+            <td>${p.policy_no || ''}</td>
+            <td>${p.fullname || ''}</td>
+            <td>${p.plan_name || ''}</td>
+            <td>${p.policy_term || ''}</td>
+            <td>${p.premium_term || ''}</td>
+            <td>${p.mode_of_payment || ''}</td>
+            <td>${p.start_date || ''}</td>
+            <td>${p.end_date || ''}</td>
+            <td>${p.premium || ''}</td>
+            <td>${p.sum_assured || ''}</td>
+            <td>${p.maturity_value || ''}</td>
+            <td>${p.nominee_name || ''}</td>
+            <td>${p.status || ''}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
     }
 
     async function deletePolicy(id) {
       if (confirm("Are you sure you want to delete this policy?")) {
         const res = await fetch(`/policies/delete/${id}`, { method: 'DELETE' });
-        if (res.ok) loadPolicies();
-        else alert("Failed to delete policy.");
+        if (res.ok) {
+          loadPolicies();
+        } else {
+          alert("Failed to delete policy.");
+        }
       }
     }
 
@@ -153,7 +164,7 @@
     }
 
     function openCreatePolicy() {
-      window.location.href = "licpolicies.html";
+      window.location.href = "licpolicies.html"; // your create policy form
     }
 
     window.onload = loadPolicies;
