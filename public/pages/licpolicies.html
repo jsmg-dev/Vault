@@ -3,100 +3,182 @@
 <head>
   <meta charset="UTF-8">
   <title>LIC Policy Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    /* === Global Styles === */
     body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #f8f9fa, #e9ecef);
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      color: #343a40;
+    }
+
+    /* === Navbar === */
+    .navbar {
+      background: linear-gradient(90deg, #1f2a44,#1f2a44);
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .navbar-title {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .navbar-buttons a {
+      background: #ff4081;
+      padding: 8px 14px;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 500;
+      margin-left: 10px;
+      transition: 0.3s;
+    }
+
+    .navbar-buttons a:hover {
+      background-color: #f50057;
+    }
+
+    /* === Form Container === */
+    form {
+      max-width: 950px;
+      margin: 30px auto 50px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+
+    form:hover {
+      transform: translateY(-3px);
     }
 
     h2 {
       text-align: center;
-      color: #4a148c;
-      margin-bottom: 20px;
-    }
-
-    form {
-      max-width: 900px;
-      margin: auto;
-      background: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+      font-size: 28px;
+      color: #6a1b9a;
+      margin-bottom: 25px;
     }
 
     fieldset {
-      border: 1px solid #ccc;
-      margin-bottom: 20px;
-      padding: 15px;
-      border-radius: 8px;
+      border: none;
+      margin-bottom: 25px;
+      padding: 0;
     }
 
     legend {
-      font-weight: bold;
-      color: #4a148c;
-      padding: 0 10px;
+      font-size: 20px;
+      font-weight: 600;
+      color: #6a1b9a;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 5px;
+      display: inline-block;
     }
 
     .form-group {
       display: flex;
-      gap: 15px;
-      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 15px;
+      align-items: center;
     }
 
     .form-group label {
-      flex: 1;
-      font-weight: bold;
-      color: #333;
+      flex: 1 1 180px;
+      font-weight: 500;
     }
 
-    .form-group input, 
-    .form-group select, 
+    .form-group input,
+    .form-group select,
     .form-group textarea {
-      flex: 2;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
+      flex: 2 1 250px;
+      padding: 10px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #6a1b9a;
+      box-shadow: 0 0 6px rgba(106,27,154,0.2);
     }
 
     textarea {
       resize: vertical;
+      min-height: 60px;
     }
 
+    /* === Submit Button === */
     .submit-btn {
       text-align: center;
+      margin-top: 20px;
     }
 
     .submit-btn button {
-      background: #4a148c;
-      color: #fff;
+      background: #6a1b9a;
+      color: white;
       border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
+      padding: 14px 28px;
+      border-radius: 8px;
       font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
+      transition: 0.3s;
     }
 
     .submit-btn button:hover {
-      background: #6a1b9a;
+      background: #8e24aa;
+      transform: translateY(-2px);
     }
 
+    /* === Message === */
     .message {
       text-align: center;
       margin-top: 15px;
       font-weight: bold;
+      font-size: 16px;
+    }
+
+    /* === Responsive === */
+    @media(max-width: 768px){
+      .form-group {
+        flex-direction: column;
+      }
+
+      .form-group label, .form-group input, .form-group select, .form-group textarea {
+        flex: 1 1 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <h2>LIC Policy Details Form</h2>
+
+  <div class="navbar">
+    <span class="navbar-title">LIC Policies</span>
+    <div class="navbar-buttons">
+      <a href="licpolicymanagement.html" class="back-btn">← Back</a>
+      <a href="/auth/logout" class="logout-btn">Logout</a>
+    </div>
+  </div>
+
   <form id="policyForm">
-    <!-- your same fields here (kept unchanged) -->
+    <h2>LIC Policy Form</h2>
 
     <fieldset>
       <legend>Policy Information</legend>
+      <!-- All your policy inputs here, unchanged -->
       <div class="form-group">
         <label for="policy_no">Policy Number</label>
         <input type="text" id="policy_no" name="policy_no" required>
@@ -145,6 +227,7 @@
 
     <fieldset>
       <legend>Personal Information</legend>
+      <!-- Your personal info fields -->
       <div class="form-group">
         <label for="fullname">Full Name</label>
         <input type="text" id="fullname" name="fullname" required>
@@ -240,68 +323,63 @@
   <div class="message" id="msg"></div>
 
   <script>
-  const form = document.getElementById("policyForm");
-  const msg = document.getElementById("msg");
+    const form = document.getElementById("policyForm");
+    const msg = document.getElementById("msg");
 
-  // Check if editing (URL has ?id=123)
-  const urlParams = new URLSearchParams(window.location.search);
-  const policyId = urlParams.get("id");
+    const urlParams = new URLSearchParams(window.location.search);
+    const policyId = urlParams.get("id");
 
-  if (policyId) {
-    document.querySelector("h2").textContent = "Edit LIC Policy";
-    document.querySelector("button[type='submit']").textContent = "Update";
+    if (policyId) {
+      document.querySelector("h2").textContent = "Edit LIC Policy";
+      document.querySelector("button[type='submit']").textContent = "Update";
 
-    // Fetch policy data and pre-fill form
-    fetch(`/policies/${policyId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data) {
-          Object.keys(data).forEach(key => {
-            if (form[key]) form[key].value = data[key] || "";
+      fetch(`/policies/${policyId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data) {
+            Object.keys(data).forEach(key => {
+              if (form[key]) form[key].value = data[key] || "";
+            });
+          }
+        })
+        .catch(err => console.error("❌ Error loading policy:", err));
+    }
+
+    form.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        let res;
+        if (policyId) {
+          res = await fetch(`/policies/update/${policyId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          });
+        } else {
+          res = await fetch("/policies/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
           });
         }
-      })
-      .catch(err => console.error("❌ Error loading policy:", err));
-  }
 
-  // Form submit
-  form.addEventListener("submit", async function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData.entries());
-
-    try {
-      let res;
-      if (policyId) {
-        // Update existing
-        res = await fetch(`/policies/update/${policyId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
-        });
-      } else {
-        // Add new
-        res = await fetch("/policies/add", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
-        });
-      }
-
-      const result = await res.json();
-      if (result.success) {
-        window.location.href = "licpolicymanagement.html"; // back to grid
-      } else {
+        const result = await res.json();
+        if (result.success) {
+          window.location.href = "licpolicymanagement.html";
+        } else {
+          msg.style.color = "red";
+          msg.textContent = "❌ Failed to save policy.";
+        }
+      } catch (err) {
+        console.error(err);
         msg.style.color = "red";
-        msg.textContent = "❌ Failed to save policy.";
+        msg.textContent = "❌ Error connecting to server.";
       }
-    } catch (err) {
-      console.error(err);
-      msg.style.color = "red";
-      msg.textContent = "❌ Error connecting to server.";
-    }
-  });
-</script>
+    });
+  </script>
 
 </body>
 </html>
