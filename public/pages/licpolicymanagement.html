@@ -153,89 +153,95 @@
   </div>
 
   <script>
-    let policies = [];
+  let policies = [];
 
-    function renderTable(data) {
-      const tbody = document.getElementById("policyBody");
-      tbody.innerHTML = "";
+  function renderTable(data) {
+    const tbody = document.getElementById("policyBody");
+    tbody.innerHTML = "";
 
-      data.forEach((p) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td class="actions">
-            <button class="icon-btn icon-delete" title="Delete" onclick="deletePolicy(${p.policy_id})">🗑️</button>
-          </td>
-          <td>${p.policy_no || ""}</td>
-          <td>${p.plan_name || ""}</td>
-          <td>${p.start_date || ""}</td>
-          <td>${p.end_date || ""}</td>
-          <td>${p.mode_of_payment || ""}</td>
-          <td>${p.next_premium_date || ""}</td>
-          <td>${p.sum_assured || ""}</td>
-          <td>${p.policy_term || ""}</td>
-          <td>${p.premium_term || ""}</td>
-          <td>${p.premium_amount || ""}</td>
-          <td>${p.maturity_value || ""}</td>
-          <td>${p.fullname || ""}</td>
-          <td>${p.dob || ""}</td>
-          <td>${p.gender || ""}</td>
-          <td>${p.marital_status || ""}</td>
-          <td>${p.aadhaar_pan || ""}</td>
-          <td>${p.email || ""}</td>
-          <td>${p.mobile || ""}</td>
-          <td>${p.address || ""}</td>
-          <td>${p.height_cm || ""}</td>
-          <td>${p.weight_kg || ""}</td>
-          <td>${p.health_lifestyle || ""}</td>
-          <td>${p.nominee_name || ""}</td>
-          <td>${p.nominee_relation || ""}</td>
-          <td>${p.bank_account || ""}</td>
-          <td>${p.ifsc_code || ""}</td>
-          <td>${p.bank_name || ""}</td>
-          <td>${p.agent_code || ""}</td>
-          <td>${p.branch_code || ""}</td>
-        `;
-        tbody.appendChild(row);
-      });
+    data.forEach((p) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td class="actions">
+          <button class="icon-btn" title="Edit" onclick="editPolicy(${p.policy_id})">✏️</button>
+          <button class="icon-btn icon-delete" title="Delete" onclick="deletePolicy(${p.policy_id})">🗑️</button>
+        </td>
+        <td>${p.policy_no || ""}</td>
+        <td>${p.plan_name || ""}</td>
+        <td>${p.start_date || ""}</td>
+        <td>${p.end_date || ""}</td>
+        <td>${p.mode_of_payment || ""}</td>
+        <td>${p.next_premium_date || ""}</td>
+        <td>${p.sum_assured || ""}</td>
+        <td>${p.policy_term || ""}</td>
+        <td>${p.premium_term || ""}</td>
+        <td>${p.premium_amount || ""}</td>
+        <td>${p.maturity_value || ""}</td>
+        <td>${p.fullname || ""}</td>
+        <td>${p.dob || ""}</td>
+        <td>${p.gender || ""}</td>
+        <td>${p.marital_status || ""}</td>
+        <td>${p.aadhaar_pan || ""}</td>
+        <td>${p.email || ""}</td>
+        <td>${p.mobile || ""}</td>
+        <td>${p.address || ""}</td>
+        <td>${p.height_cm || ""}</td>
+        <td>${p.weight_kg || ""}</td>
+        <td>${p.health_lifestyle || ""}</td>
+        <td>${p.nominee_name || ""}</td>
+        <td>${p.nominee_relation || ""}</td>
+        <td>${p.bank_account || ""}</td>
+        <td>${p.ifsc_code || ""}</td>
+        <td>${p.bank_name || ""}</td>
+        <td>${p.agent_code || ""}</td>
+        <td>${p.branch_code || ""}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  async function fetchPolicies() {
+    try {
+      const res = await fetch("/policies/list", { headers: { 'Cache-Control': 'no-cache' } });
+      policies = await res.json();
+      renderTable(policies);
+    } catch (err) {
+      console.error("❌ Fetch failed:", err);
     }
+  }
 
-    async function fetchPolicies() {
-      try {
-        const res = await fetch("/policies/list", { headers: { 'Cache-Control': 'no-cache' } });
-        policies = await res.json();
+  async function deletePolicy(id) {
+    if (!confirm("Are you sure you want to delete this policy?")) return;
+    try {
+      const res = await fetch(`/policies/delete/${id}`, { method: "DELETE" });
+      const result = await res.json();
+      if (result.changes > 0) {
+        policies = policies.filter(p => p.policy_id !== id);
         renderTable(policies);
-      } catch (err) {
-        console.error("❌ Fetch failed:", err);
+      } else {
+        alert("❌ Failed to delete policy");
       }
+    } catch (err) {
+      console.error("❌ Delete failed:", err);
     }
+  }
 
-    async function deletePolicy(id) {
-      if (!confirm("Are you sure you want to delete this policy?")) return;
-      try {
-        const res = await fetch(`/policies/delete/${id}`, { method: "DELETE" });
-        const result = await res.json();
-        if (result.changes > 0) {
-          policies = policies.filter(p => p.policy_id !== id);
-          renderTable(policies);
-        } else {
-          alert("❌ Failed to delete policy");
-        }
-      } catch (err) {
-        console.error("❌ Delete failed:", err);
-      }
-    }
+  function editPolicy(id) {
+    // Redirect to edit page with ID param
+    window.location.href = `licpolicies.html?id=${id}`;
+  }
 
-    function filterTable(colIndex) {
-      const inputs = document.querySelectorAll('.filter-input');
-      const value = inputs[colIndex - 1].value.toUpperCase();
-      const rows = document.querySelectorAll('#policyTable tbody tr');
-      rows.forEach(row => {
-        const cell = row.cells[colIndex];
-        row.style.display = cell && cell.textContent.toUpperCase().includes(value) ? '' : 'none';
-      });
-    }
+  function filterTable(colIndex) {
+    const inputs = document.querySelectorAll('.filter-input');
+    const value = inputs[colIndex - 1].value.toUpperCase();
+    const rows = document.querySelectorAll('#policyTable tbody tr');
+    rows.forEach(row => {
+      const cell = row.cells[colIndex];
+      row.style.display = cell && cell.textContent.toUpperCase().includes(value) ? '' : 'none';
+    });
+  }
 
-    window.onload = fetchPolicies;
-  </script>
+  window.onload = fetchPolicies;
+</script>
 </body>
 </html>

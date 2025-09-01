@@ -240,33 +240,68 @@
   <div class="message" id="msg"></div>
 
   <script>
-    document.getElementById("policyForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
+  const form = document.getElementById("policyForm");
+  const msg = document.getElementById("msg");
 
-      const formData = new FormData(this);
-      const data = Object.fromEntries(formData.entries());
+  // Check if editing (URL has ?id=123)
+  const urlParams = new URLSearchParams(window.location.search);
+  const policyId = urlParams.get("id");
 
-      try {
-        const res = await fetch("/policies/add", {
+  if (policyId) {
+    document.querySelector("h2").textContent = "Edit LIC Policy";
+    document.querySelector("button[type='submit']").textContent = "Update";
+
+    // Fetch policy data and pre-fill form
+    fetch(`/policies/${policyId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          Object.keys(data).forEach(key => {
+            if (form[key]) form[key].value = data[key] || "";
+          });
+        }
+      })
+      .catch(err => console.error("❌ Error loading policy:", err));
+  }
+
+  // Form submit
+  form.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      let res;
+      if (policyId) {
+        // Update existing
+        res = await fetch(`/policies/update/${policyId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+      } else {
+        // Add new
+        res = await fetch("/policies/add", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         });
-
-        const result = await res.json();
-        const msg = document.getElementById("msg");
-if (result.success) {
-      // Redirect to grid page after successful save
-      window.location.href = "licpolicymanagement.html"; // <-- change to your grid file name
-    } else {
-      document.getElementById("msg").style.color = "red";
-      document.getElementById("msg").textContent = "❌ Failed to add policy.";
-    }
-      } catch (err) {
-        console.error(err);
-        document.getElementById("msg").textContent = "❌ Error connecting to server.";
       }
-    });
-  </script>
+
+      const result = await res.json();
+      if (result.success) {
+        window.location.href = "licpolicymanagement.html"; // back to grid
+      } else {
+        msg.style.color = "red";
+        msg.textContent = "❌ Failed to save policy.";
+      }
+    } catch (err) {
+      console.error(err);
+      msg.style.color = "red";
+      msg.textContent = "❌ Error connecting to server.";
+    }
+  });
+</script>
+
 </body>
 </html>

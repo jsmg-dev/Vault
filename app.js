@@ -351,3 +351,50 @@ app.delete("/policies/delete/:id", (req, res) => {
   });
 });
 
+// === Update Policy by ID ===
+app.put("/policies/update/:id", (req, res) => {
+  const { id } = req.params;
+
+  const {
+    policy_no, plan_name, start_date, end_date, mode_of_payment, next_premium_date,
+    sum_assured, policy_term, premium_term, premium_amount, maturity_value,
+    fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address,
+    height_cm, weight_kg, health_lifestyle,
+    nominee_name, nominee_relation,
+    bank_account, ifsc_code, bank_name,
+    agent_code, branch_code
+  } = req.body;
+
+  const sql = `
+    UPDATE lic_policy_details
+    SET
+      policy_no = ?, plan_name = ?, start_date = ?, end_date = ?, mode_of_payment = ?, next_premium_date = ?,
+      sum_assured = ?, policy_term = ?, premium_term = ?, premium_amount = ?, maturity_value = ?,
+      fullname = ?, dob = ?, gender = ?, marital_status = ?, aadhaar_pan = ?, email = ?, mobile = ?, address = ?,
+      height_cm = ?, weight_kg = ?, health_lifestyle = ?, nominee_name = ?, nominee_relation = ?,
+      bank_account = ?, ifsc_code = ?, bank_name = ?, agent_code = ?, branch_code = ?
+    WHERE policy_id = ?
+  `;
+
+  const params = [
+    policy_no, plan_name, start_date, end_date, mode_of_payment, next_premium_date,
+    sum_assured, policy_term, premium_term, premium_amount, maturity_value,
+    fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address,
+    height_cm, weight_kg, health_lifestyle, nominee_name, nominee_relation,
+    bank_account, ifsc_code, bank_name, agent_code, branch_code,
+    id
+  ];
+
+  db.run(sql, params, function(err) {
+    if (err) {
+      console.error("❌ Update error:", err.message);
+      return res.status(500).json({ error: "Failed to update policy" });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: "Policy not found" });
+    }
+
+    res.json({ success: true, updatedId: id });
+  });
+});
