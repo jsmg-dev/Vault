@@ -5,7 +5,11 @@ const sqlite3 = require('sqlite3').verbose();
 const session = require('express-session'); // <-- IMPORT HERE
 const app = express();
 const usersRouter = require('./routes/users');
+const policiesRouter = require('./routes/policies'); // adjust path
+const cors = require("cors");
+
 const port = 8080;
+
 
 // Add after bodyParser middleware
 app.use(session({
@@ -35,6 +39,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
 // === Import Routes ===
 const authRoutes = require('./routes/auth');
 
@@ -42,14 +47,15 @@ const customerRoutes = require('./routes/customers');
 const depositRoutes = require('./routes/deposits');
 const reportsRoutes = require('./routes/reports');
 
+
 // === Mount Routes ===
 app.use('/auth', authRoutes);
 app.use('/users', usersRouter);
 app.use('/customers', customerRoutes);
 app.use('/deposits', depositRoutes);
 app.use('/reports', reportsRoutes);
-
-
+app.use('/policies', policiesRouter); 
+app.use(cors());
 // === Login Page ===
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/pages/login.html'));
@@ -263,85 +269,85 @@ app.get('/emi', (req, res) => {
   res.json({ emi: emi.toFixed(2) });
 });
 // === LIC Policies Table Setup ===
+// === LIC Policies Table Setup ===
 db.run(`
-  CREATE TABLE IF NOT EXISTS lic_policy_details (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    policy_no TEXT NOT NULL,
-    fullname TEXT NOT NULL,
-    dob TEXT NOT NULL,
-    gender TEXT,
-    marital_status TEXT,
-    aadhaar_pan TEXT,
-    email TEXT,
-    mobile TEXT,
-    address TEXT,
-    plan_name TEXT,
-    start_date TEXT,
-    end_date TEXT,
-    mode_of_payment TEXT,
-    next_premium_date TEXT,
-    sum_assured REAL,
-    policy_term INTEGER,
-    premium_term INTEGER,
-    premium REAL,
-    maturity_value REAL,
-    nominee_name TEXT,
-    nominee_relation TEXT,
-    height_cm REAL,
-    weight_kg REAL,
-    health_lifestyle TEXT,
-    bank_account TEXT,
-    ifsc_code TEXT,
-    bank_name TEXT,
-    agent_code TEXT,
-    branch_code TEXT,
-    status TEXT DEFAULT 'Active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )
+CREATE TABLE IF NOT EXISTS lic_policy_details (
+  policy_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  policy_no TEXT,
+  plan_name TEXT,
+  start_date TEXT,
+  end_date TEXT,
+  mode_of_payment TEXT,
+  next_premium_date TEXT,
+  sum_assured REAL,
+  policy_term INTEGER,
+  premium_term INTEGER,
+  premium_amount REAL,
+  maturity_value REAL,
+  fullname TEXT,
+  dob TEXT,
+  gender TEXT,
+  marital_status TEXT,
+  aadhaar_pan TEXT,
+  email TEXT,
+  mobile TEXT,
+  address TEXT,
+  height_cm REAL,
+  weight_kg REAL,
+  health_lifestyle TEXT,
+  nominee_name TEXT,
+  nominee_relation TEXT,
+  bank_account TEXT,
+  ifsc_code TEXT,
+  bank_name TEXT,
+  agent_code TEXT,
+  branch_code TEXT
+)
 `);
 
 // === Save a New Policy ===
 app.post("/policies/add", (req, res) => {
-  const {
-    policy_no, fullname, dob, gender, marital_status, aadhaar_pan, email,
-    mobile, address, plan_name, start_date, end_date, mode_of_payment,
-    next_premium_date, sum_assured, policy_term, premium_term, premium,
-    maturity_value, nominee_name, nominee_relation, height_cm, weight_kg,
-    health_lifestyle, bank_account, ifsc_code, bank_name, agent_code,
-    branch_code, status
-  } = req.body;
+  const data = req.body;
+  const sql = `INSERT INTO lic_policy_details 
+    (policy_no, plan_name, start_date, end_date, mode_of_payment, next_premium_date, sum_assured, policy_term, premium_term, premium_amount, maturity_value,
+     fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address, height_cm, weight_kg, health_lifestyle,
+     nominee_name, nominee_relation, bank_account, ifsc_code, bank_name, agent_code, branch_code)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
-  const sql = `
-    INSERT INTO lic_policy_details (
-      policy_no, fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address,
-      plan_name, start_date, end_date, mode_of_payment, next_premium_date, sum_assured,
-      policy_term, premium_term, premium, maturity_value, nominee_name, nominee_relation,
-      height_cm, weight_kg, health_lifestyle, bank_account, ifsc_code, bank_name,
-      agent_code, branch_code, status
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-  `;
+  const params = [
+    data.policy_no, data.plan_name, data.start_date, data.end_date, data.mode_of_payment, data.next_premium_date,
+    data.sum_assured, data.policy_term, data.premium_term, data.premium_amount, data.maturity_value,
+    data.fullname, data.dob, data.gender, data.marital_status, data.aadhaar_pan, data.email, data.mobile,
+    data.address, data.height_cm, data.weight_kg, data.health_lifestyle,
+    data.nominee_name, data.nominee_relation, data.bank_account, data.ifsc_code, data.bank_name, data.agent_code, data.branch_code
+  ];
 
-  db.run(sql, [
-    policy_no, fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address,
-    plan_name, start_date, end_date, mode_of_payment, next_premium_date, sum_assured,
-    policy_term, premium_term, premium, maturity_value, nominee_name, nominee_relation,
-    height_cm, weight_kg, health_lifestyle, bank_account, ifsc_code, bank_name,
-    agent_code, branch_code, status
-  ], function(err) {
-    if (err) {
-      console.error("❌ Insert error:", err.message);
-      return res.status(500).json({ error: "Failed to add policy" });
-    }
+  db.run(sql, params, function(err) {
+    if (err) return res.json({ success: false, error: err.message });
     res.json({ success: true, id: this.lastID });
   });
 });
 
 // === Fetch All Policies ===
-app.get("/policies", (req, res) => {
-  db.all("SELECT * FROM lic_policy_details", [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
+app.get("/policies/list", (req, res) => {
+  db.all("SELECT * FROM lic_policy_details ORDER BY policy_id DESC", [], (err, rows) => {
+    if (err) {
+      console.error("❌ Fetch error:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
     res.json(rows);
   });
 });
 
+// === Delete Policy ===
+app.delete("/policies/delete/:id", (req, res) => {
+  const { id } = req.params;
+  db.run("DELETE FROM lic_policy_details WHERE policy_id = ?", [id], function(err) {
+    if (err) {
+      console.error("❌ Delete error:", err.message);
+      return res.status(500).json({ error: "Failed to delete policy" });
+    }
+    res.json({ success: true, deletedId: id });
+  });
+});
 

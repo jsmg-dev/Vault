@@ -1,92 +1,72 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
 // === Add New Policy ===
-router.post('/add', (req, res) => {
+router.post("/add", (req, res) => {
   const db = req.app.locals.db;
 
   const {
-    policy_no,
-    fullname,
-    dob,
-    gender,
-    marital_status,
-    aadhaar_pan,
-    email,
-    mobile,
-    address,
-    plan_name,
-    start_date,
-    end_date,
-    mode_of_payment,
-    next_premium_date,
-    sum_assured,
-    policy_term,
-    premium_term,
-    premium,
-    maturity_value,
-    nominee_name,
-    nominee_relation,
-    height_cm,
-    weight_kg,
-    health_lifestyle,
-    bank_account,
-    ifsc_code,
-    bank_name,
-    agent_code,
-    branch_code,
-    status
+    policy_no, plan_name, start_date, end_date, mode_of_payment, next_premium_date,
+    sum_assured, policy_term, premium_term, premium_amount, maturity_value,
+    fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address,
+    height_cm, weight_kg, health_lifestyle,
+    nominee_name, nominee_relation,
+    bank_account, ifsc_code, bank_name,
+    agent_code, branch_code
   } = req.body;
 
   const sql = `
     INSERT INTO lic_policy_details (
-      policy_no, fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address,
-      plan_name, start_date, end_date, mode_of_payment, next_premium_date, sum_assured,
-      policy_term, premium_term, premium, maturity_value, nominee_name, nominee_relation,
-      height_cm, weight_kg, health_lifestyle, bank_account, ifsc_code, bank_name,
-      agent_code, branch_code, status, created_at
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'))
+      policy_no, plan_name, start_date, end_date, mode_of_payment, next_premium_date,
+      sum_assured, policy_term, premium_term, premium_amount, maturity_value,
+      fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address,
+      height_cm, weight_kg, health_lifestyle,
+      nominee_name, nominee_relation,
+      bank_account, ifsc_code, bank_name,
+      agent_code, branch_code
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.run(sql, [
-    policy_no, fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address,
-    plan_name, start_date, end_date, mode_of_payment, next_premium_date, sum_assured,
-    policy_term, premium_term, premium, maturity_value, nominee_name, nominee_relation,
-    height_cm, weight_kg, health_lifestyle, bank_account, ifsc_code, bank_name,
-    agent_code, branch_code, status
-  ], function(err) {
-    if (err) {
-      console.error("❌ Failed to insert policy:", err.message);
-      return res.status(500).json({ error: "Failed to add policy" });
-    }
+  const params = [
+    policy_no, plan_name, start_date, end_date, mode_of_payment, next_premium_date,
+    sum_assured, policy_term, premium_term, premium_amount, maturity_value,
+    fullname, dob, gender, marital_status, aadhaar_pan, email, mobile, address,
+    height_cm, weight_kg, health_lifestyle,
+    nominee_name, nominee_relation,
+    bank_account, ifsc_code, bank_name,
+    agent_code, branch_code
+  ];
 
-    res.json({ success: true, policy_id: this.lastID });
+db.run(sql, params, function (err) {
+    if (err) {
+      console.error("❌ DB Insert Error:", err.message);
+      return res.status(500).json({ success: false, error: err.message });
+    }
+    res.json({ success: true, message: "✅ Policy added successfully", id: this.lastID });
   });
 });
-
 // === Get All Policies ===
-router.get('/list', (req, res) => {
+router.get("/list", (req, res) => {
   const db = req.app.locals.db;
-
-  db.all(`SELECT * FROM lic_policy_details ORDER BY created_at DESC`, [], (err, rows) => {
+  db.all("SELECT * FROM lic_policy_details", [], (err, rows) => {
     if (err) {
-      console.error("❌ Failed to fetch policies:", err.message);
-      return res.status(500).json({ error: "Failed to fetch policies" });
+      console.error(err);
+      return res.status(500).json({ error: err.message });
     }
-
     res.json(rows);
   });
 });
 
-// === Delete Policy ===
-router.delete('/delete/:id', (req, res) => {
+// === Delete Policy by ID ===
+router.delete("/delete/:id", (req, res) => {
   const db = req.app.locals.db;
-  db.run(`DELETE FROM lic_policy_details WHERE id = ?`, [req.params.id], function(err) {
+  const { id } = req.params;
+  db.run("DELETE FROM lic_policy_details WHERE policy_id = ?", [id], function (err) {
     if (err) {
-      console.error("❌ Failed to delete policy:", err.message);
-      return res.status(500).json({ error: "Failed to delete policy" });
+      console.error(err);
+      return res.status(500).json({ error: err.message });
     }
-    res.json({ success: true });
+    res.json({ message: "Policy deleted successfully", changes: this.changes });
   });
 });
 
