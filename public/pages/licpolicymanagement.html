@@ -9,7 +9,7 @@
     body {
       font-family: 'Inter', sans-serif;
       margin: 0;
-      background: #F3E5F5; /* Soft pastel purple */
+      background: #F3E5F5;
       color: #333;
     }
     .navbar {
@@ -19,11 +19,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    .navbar-title {
-      font-size: 20px;
-      color: white;
-      font-weight: 600;
-    }
+    .navbar-title { font-size: 20px; color: white; font-weight: 600; }
     .logout-btn, .back-btn {
       background: #f44336;
       padding: 8px 14px;
@@ -42,14 +38,8 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
       overflow-x: auto;
     }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .header h2 {
-      color: #004aad;
-    }
+    .header { display: flex; justify-content: space-between; align-items: center; }
+    .header h2 { color: #004aad; }
     .create-btn {
       background: #004aad;
       color: #fff;
@@ -62,7 +52,7 @@
     .create-btn:hover { background: #00307a; }
     table {
       width: 100%;
-      min-width: 2200px; /* wide table for many fields */
+      min-width: 2200px;
       border-collapse: collapse;
       margin-top: 20px;
     }
@@ -79,23 +69,11 @@
       top: 0;
       z-index: 2;
     }
-    .actions {
-      display: flex;
-      gap: 6px;
-    }
-    .icon-btn {
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-size: 16px;
-    }
+    .actions { display: flex; gap: 6px; }
+    .icon-btn { border: none; background: none; cursor: pointer; font-size: 16px; }
     .icon-delete { color: #f44336; }
-    input.filter-input {
-      width: 100%;
-      padding: 5px;
-      font-size: 13px;
-      margin-top: 5px;
-    }
+    input.filter-input { width: 100%; padding: 5px; font-size: 13px; margin-top: 5px; }
+    .btn-group { display: flex; gap: 10px; }
   </style>
 </head>
 <body>
@@ -110,7 +88,10 @@
   <div class="container">
     <div class="header">
       <h2>Policy List</h2>
-      <button class="create-btn" onclick="window.location.href='licpolicies.html'">+ Add New Policy</button>
+      <div class="btn-group">
+        <button class="create-btn" onclick="window.location.href='licpolicies.html'">+ Add New Policy</button>
+        <button class="create-btn" onclick="exportTableToCSV()">⬇ Export</button>
+      </div>
     </div>
 
     <table id="policyTable">
@@ -153,95 +134,118 @@
   </div>
 
   <script>
-  let policies = [];
+    let policies = [];
 
-  function renderTable(data) {
-    const tbody = document.getElementById("policyBody");
-    tbody.innerHTML = "";
-
-    data.forEach((p) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td class="actions">
-          <button class="icon-btn" title="Edit" onclick="editPolicy(${p.policy_id})">✏️</button>
-          <button class="icon-btn icon-delete" title="Delete" onclick="deletePolicy(${p.policy_id})">🗑️</button>
-        </td>
-        <td>${p.policy_no || ""}</td>
-        <td>${p.plan_name || ""}</td>
-        <td>${p.start_date || ""}</td>
-        <td>${p.end_date || ""}</td>
-        <td>${p.mode_of_payment || ""}</td>
-        <td>${p.next_premium_date || ""}</td>
-        <td>${p.sum_assured || ""}</td>
-        <td>${p.policy_term || ""}</td>
-        <td>${p.premium_term || ""}</td>
-        <td>${p.premium_amount || ""}</td>
-        <td>${p.maturity_value || ""}</td>
-        <td>${p.fullname || ""}</td>
-        <td>${p.dob || ""}</td>
-        <td>${p.gender || ""}</td>
-        <td>${p.marital_status || ""}</td>
-        <td>${p.aadhaar_pan || ""}</td>
-        <td>${p.email || ""}</td>
-        <td>${p.mobile || ""}</td>
-        <td>${p.address || ""}</td>
-        <td>${p.height_cm || ""}</td>
-        <td>${p.weight_kg || ""}</td>
-        <td>${p.health_lifestyle || ""}</td>
-        <td>${p.nominee_name || ""}</td>
-        <td>${p.nominee_relation || ""}</td>
-        <td>${p.bank_account || ""}</td>
-        <td>${p.ifsc_code || ""}</td>
-        <td>${p.bank_name || ""}</td>
-        <td>${p.agent_code || ""}</td>
-        <td>${p.branch_code || ""}</td>
-      `;
-      tbody.appendChild(row);
-    });
-  }
-
-  async function fetchPolicies() {
-    try {
-      const res = await fetch("/policies/list", { headers: { 'Cache-Control': 'no-cache' } });
-      policies = await res.json();
-      renderTable(policies);
-    } catch (err) {
-      console.error("❌ Fetch failed:", err);
+    function renderTable(data) {
+      const tbody = document.getElementById("policyBody");
+      tbody.innerHTML = "";
+      data.forEach((p) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="actions">
+            <button class="icon-btn" title="Edit" onclick="editPolicy(${p.policy_id})">✏️</button>
+            <button class="icon-btn icon-delete" title="Delete" onclick="deletePolicy(${p.policy_id})">🗑️</button>
+          </td>
+          <td>${p.policy_no || ""}</td>
+          <td>${p.plan_name || ""}</td>
+          <td>${p.start_date || ""}</td>
+          <td>${p.end_date || ""}</td>
+          <td>${p.mode_of_payment || ""}</td>
+          <td>${p.next_premium_date || ""}</td>
+          <td>${p.sum_assured || ""}</td>
+          <td>${p.policy_term || ""}</td>
+          <td>${p.premium_term || ""}</td>
+          <td>${p.premium_amount || ""}</td>
+          <td>${p.maturity_value || ""}</td>
+          <td>${p.fullname || ""}</td>
+          <td>${p.dob || ""}</td>
+          <td>${p.gender || ""}</td>
+          <td>${p.marital_status || ""}</td>
+          <td>${p.aadhaar_pan || ""}</td>
+          <td>${p.email || ""}</td>
+          <td>${p.mobile || ""}</td>
+          <td>${p.address || ""}</td>
+          <td>${p.height_cm || ""}</td>
+          <td>${p.weight_kg || ""}</td>
+          <td>${p.health_lifestyle || ""}</td>
+          <td>${p.nominee_name || ""}</td>
+          <td>${p.nominee_relation || ""}</td>
+          <td>${p.bank_account || ""}</td>
+          <td>${p.ifsc_code || ""}</td>
+          <td>${p.bank_name || ""}</td>
+          <td>${p.agent_code || ""}</td>
+          <td>${p.branch_code || ""}</td>
+        `;
+        tbody.appendChild(row);
+      });
     }
-  }
 
-  async function deletePolicy(id) {
-    if (!confirm("Are you sure you want to delete this policy?")) return;
-    try {
-      const res = await fetch(`/policies/delete/${id}`, { method: "DELETE" });
-      const result = await res.json();
-      if (result.changes > 0) {
-        policies = policies.filter(p => p.policy_id !== id);
+    async function fetchPolicies() {
+      try {
+        const res = await fetch("/policies/list", { headers: { 'Cache-Control': 'no-cache' } });
+        policies = await res.json();
         renderTable(policies);
-      } else {
-        alert("❌ Failed to delete policy");
+      } catch (err) {
+        console.error("❌ Fetch failed:", err);
       }
-    } catch (err) {
-      console.error("❌ Delete failed:", err);
     }
-  }
 
-  function editPolicy(id) {
-    // Redirect to edit page with ID param
-    window.location.href = `licpolicies.html?id=${id}`;
-  }
+    async function deletePolicy(id) {
+      if (!confirm("Are you sure you want to delete this policy?")) return;
+      try {
+        const res = await fetch(`/policies/delete/${id}`, { method: "DELETE" });
+        const result = await res.json();
+        if (result.changes > 0) {
+          policies = policies.filter(p => p.policy_id !== id);
+          renderTable(policies);
+        } else {
+          alert("❌ Failed to delete policy");
+        }
+      } catch (err) {
+        console.error("❌ Delete failed:", err);
+      }
+    }
 
-  function filterTable(colIndex) {
-    const inputs = document.querySelectorAll('.filter-input');
-    const value = inputs[colIndex - 1].value.toUpperCase();
-    const rows = document.querySelectorAll('#policyTable tbody tr');
-    rows.forEach(row => {
-      const cell = row.cells[colIndex];
-      row.style.display = cell && cell.textContent.toUpperCase().includes(value) ? '' : 'none';
-    });
-  }
+    function editPolicy(id) {
+      window.location.href = `licpolicies.html?id=${id}`;
+    }
 
-  window.onload = fetchPolicies;
-</script>
+    function filterTable(colIndex) {
+      const inputs = document.querySelectorAll('.filter-input');
+      const value = inputs[colIndex - 1].value.toUpperCase();
+      const rows = document.querySelectorAll('#policyTable tbody tr');
+      rows.forEach(row => {
+        const cell = row.cells[colIndex];
+        row.style.display = cell && cell.textContent.toUpperCase().includes(value) ? '' : 'none';
+      });
+    }
+
+    function downloadCSV(csv, filename) {
+      let csvFile = new Blob([csv], { type: "text/csv" });
+      let downloadLink = document.createElement("a");
+      downloadLink.download = filename;
+      downloadLink.href = window.URL.createObjectURL(csvFile);
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+    }
+
+    function exportTableToCSV() {
+      let csv = [];
+      let rows = document.querySelectorAll("#policyTable tr");
+      for (let i = 0; i < rows.length; i++) {
+        let row = [], cols = rows[i].querySelectorAll("td, th");
+        for (let j = 1; j < cols.length; j++) { // start at 1 (skip Actions col)
+          let cellText = cols[j].querySelector("input")
+            ? cols[j].childNodes[0].textContent.trim()
+            : cols[j].innerText;
+          row.push(`"${cellText.replace(/"/g, '""')}"`);
+        }
+        csv.push(row.join(","));
+      }
+      downloadCSV(csv.join("\n"), "policies_export.csv");
+    }
+
+    window.onload = fetchPolicies;
+  </script>
 </body>
 </html>
